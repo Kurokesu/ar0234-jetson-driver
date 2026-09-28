@@ -14,9 +14,8 @@ DTC       := dtc
 DTC_FLAGS := -@ -I dts -O dtb -Wno-unit_address_vs_reg
 
 UNAME_R        := $(shell uname -r)
-KERNEL_RELEASE := $(shell echo '$(UNAME_R)' | sed 's/-tegra.*/-tegra-ubuntu22.04_aarch64/')
-JETSON_KSRC    := 3rdparty/canonical/linux-jammy/kernel-source
-KERNEL_INCLUDE := /usr/src/linux-headers-$(KERNEL_RELEASE)/$(JETSON_KSRC)/include
+KDIR           ?= /lib/modules/$(UNAME_R)/build
+KERNEL_INCLUDE := $(KDIR)/include
 LOCAL_INCLUDE  := $(BUILD_DIR)/include
 
 CPP       := cpp
@@ -28,8 +27,7 @@ L4T_MAJOR := $(shell grep -oP 'R\K[0-9]+' /etc/nv_tegra_release | head -1)
 L4T_MINOR := $(shell grep -oP 'REVISION:\s*\K[0-9]+' /etc/nv_tegra_release | head -1)
 
 # Kernel module
-KDIR   ?= /lib/modules/$(UNAME_R)/build
-NV_OOT := /usr/src/nvidia/nvidia-oot
+NV_OOT := /usr/src/nvidia/nvidia-public
 
 # Auto-generated include markers
 DT_HEADER  := $(LOCAL_INCLUDE)/dt-bindings/tegra234-p3767-0000-common.h

@@ -14,7 +14,7 @@ DKMS_SRC="$(pwd)"
 
 DTS_FILES=$(ls ./*.dts)
 
-KERNEL_INCLUDE="/usr/src/linux-headers-$(uname -r | sed 's/-tegra.*/-tegra-ubuntu22.04_aarch64/')/3rdparty/canonical/linux-jammy/kernel-source/include"
+KERNEL_INCLUDE="/lib/modules/$(uname -r)/build/include"
 LOCAL_INCLUDE="$DKMS_SRC/include"
 NV_TEGRA_RELEASE="/etc/nv_tegra_release"
 
