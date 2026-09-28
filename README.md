@@ -92,7 +92,7 @@ Single:
 ```bash
 gst-launch-1.0 -e nvarguscamerasrc sensor-id=0 ! \
    'video/x-raw(memory:NVMM),width=1920,height=1200,framerate=30/1' ! \
-   queue ! nvvidconv ! queue ! nveglglessink
+   nv3dsink
 ```
 
 Dual:
@@ -101,11 +101,15 @@ Dual:
 gst-launch-1.0 -e \
    nvarguscamerasrc sensor-id=0 ! \
       'video/x-raw(memory:NVMM),width=1920,height=1200,framerate=30/1' ! \
-      queue ! nvvidconv ! queue ! nveglglessink \
+      nv3dsink \
    nvarguscamerasrc sensor-id=1 ! \
       'video/x-raw(memory:NVMM),width=1920,height=1200,framerate=30/1' ! \
-      queue ! nvvidconv ! queue ! nveglglessink
+      nv3dsink
 ```
+
+On JetPack 7, VIC no longer does the RGB conversion `nvvidconv` needs to feed
+`nveglglessink`, which fails with `NvVicCompose Failed`. `nv3dsink` takes the
+NVMM buffers straight from Argus, so no conversion is needed.
 
 ### nvgstcapture
 
