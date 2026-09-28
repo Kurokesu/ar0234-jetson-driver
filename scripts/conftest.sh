@@ -93,6 +93,15 @@ int conftest_i2c_driver_struct_remove_return_type_int(struct i2c_driver *i2cd) {
 	return i2cd->remove(NULL);
 }" "NV_I2C_DRIVER_STRUCT_REMOVE_RETURN_TYPE_INT" "types"
 
+# Gates a tegra_pmc member that shifts the camera_common_data layout
+print CHECK "tegra_pmc_io_pad_power_enable"
+compile_test "
+#define _LINUX_EFI_H
+#include <soc/tegra/pmc.h>
+void conftest_tegra_pmc_io_pad_power_enable(void) {
+	tegra_pmc_io_pad_power_enable();
+}" "NV_TEGRA_PMC_IO_PAD_POWER_ENABLE_PRESENT" "functions"
+
 # Write output
 mkdir -p "$OUT_DIR/nvidia"
 cat > "$OUT_DIR/nvidia/conftest.h" << HEADER
