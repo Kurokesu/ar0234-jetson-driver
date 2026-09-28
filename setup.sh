@@ -95,6 +95,10 @@ if [ -d "$TUNING_DIR" ]; then
 		print RETIRE "camera_overrides.isp -> camera_overrides.isp.bak"
 		mv "$GLOBAL_ISP" "$GLOBAL_ISP.bak"
 	fi
+
+	# Argus on JetPack 7 will not stream without a NITO badged for the module
+	print COPY "ISP NITO -> $NVCAM_SETTINGS"
+	cp "$TUNING_DIR"/*.nito "$NVCAM_SETTINGS/"
 fi
 
 echo ""
