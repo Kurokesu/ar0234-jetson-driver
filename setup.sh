@@ -125,6 +125,13 @@ if [ -d "$TUNING_DIR" ]; then
 	fi
 fi
 
+# Keep camera RTCPU awake
+RULE="$SCRIPT_DIR/udev/99-camera-rtcpu.rules"
+print COPY "RTCPU keep-awake rule -> /etc/udev/rules.d"
+cp "$RULE" /etc/udev/rules.d/
+udevadm control --reload
+udevadm trigger -c add -p OF_NAME=rtcpu
+
 echo ""
 echo "Done. To configure CSI connector, run:"
 echo "sudo /opt/nvidia/jetson-io/jetson-io.py"

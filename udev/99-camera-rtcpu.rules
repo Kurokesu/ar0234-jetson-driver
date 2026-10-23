@@ -1,0 +1,3 @@
+# Keep RTCPU awake, NVCSI recalibration on resume can break capture until reboot
+# https://forums.developer.nvidia.com/t/issue-about-nvcsi/299349
+ACTION=="add|bind", SUBSYSTEM=="platform", ENV{OF_NAME}=="rtcpu", ATTR{power/control}="on"
