@@ -10,6 +10,12 @@ set -e
 # Status line formatter (matches Makefile's PRINT)
 print() { printf '  %-7s %s\n' "$1" "$2"; }
 
+# Existing link in nvcam settings is user's tuning choice
+user_link() {
+	[ -L "$1" ] || return 1
+	print KEEP "${1##*/} -> $(readlink "$1")"
+}
+
 # Package identity and install paths
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DKMS_CONF="$SCRIPT_DIR/dkms.conf"
@@ -23,21 +29,25 @@ GLOBAL_ISP="$NVCAM_SETTINGS/camera_overrides.isp"
 
 # Check required variables
 if [ -z "$VERSION" ] || [ -z "$PACKAGE_NAME" ] || [ -z "$SENSOR" ]; then
-	echo "Error: failed to parse $DKMS_CONF"
+	echo "Error: failed to parse $DKMS_CONF" >&2
 	exit 1
 fi
 
+echo "Kurokesu Camera Driver Installer"
+echo "${PACKAGE_NAME} v${VERSION}"
+echo ""
+
 # Check prerequisites
 if ! command -v dkms >/dev/null 2>&1; then
-	echo "Error: dkms not installed. Run:"
-	echo "sudo apt install --no-install-recommends dkms"
+	echo "Error: dkms not installed. Run:" >&2
+	echo "sudo apt install -y --no-install-recommends dkms" >&2
 	exit 1
 fi
 
 # Check for headers, dkms's own error would suggest non-existent linux-headers-*
 if [ ! -e "/lib/modules/$(uname -r)/build/Makefile" ]; then
-	echo "Error: kernel headers not found. Run:"
-	echo "sudo apt install --reinstall nvidia-l4t-kernel-headers"
+	echo "Error: kernel headers not found. Run:" >&2
+	echo "sudo apt install -y --reinstall nvidia-l4t-kernel-headers" >&2
 	exit 1
 fi
 
@@ -89,7 +99,19 @@ dkms install -m "$PACKAGE_NAME" -v "$VERSION"
 # Install ISP tuning
 if [ -d "$TUNING_DIR" ]; then
 	print COPY "ISP tuning -> $NVCAM_SETTINGS"
-	cp "$TUNING_DIR"/*.isp "$NVCAM_SETTINGS/"
+	for ISP in "$TUNING_DIR"/*.isp; do
+		NAME="${ISP##*/}"
+		user_link "$NVCAM_SETTINGS/$NAME" || cp "$ISP" "$NVCAM_SETTINGS/"
+
+		# Plain <vendor>_<part> tuning is default for both badges
+		case "$NAME" in *_*_*) continue ;; esac
+		for POS in front rear; do
+			BADGE="${NAME%%_*}_${POS}_${NAME#*_}"
+			user_link "$NVCAM_SETTINGS/$BADGE" && continue
+			print LINK "$BADGE -> $NAME"
+			ln -sf "$NAME" "$NVCAM_SETTINGS/$BADGE"
+		done
+	done
 
 	if [ -e "$GLOBAL_ISP" ]; then
 		print RETIRE "camera_overrides.isp -> camera_overrides.isp.bak"
