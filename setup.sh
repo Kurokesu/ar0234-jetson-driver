@@ -21,8 +21,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DKMS_CONF="$SCRIPT_DIR/dkms.conf"
 VERSION=$(grep '^PACKAGE_VERSION=' "$DKMS_CONF" | cut -d'"' -f2)
 PACKAGE_NAME=$(grep '^PACKAGE_NAME=' "$DKMS_CONF" | cut -d'"' -f2)
-SENSOR=$(grep '^BUILT_MODULE_NAME=' "$DKMS_CONF" | cut -d'"' -f2 | sed 's/^nv_//')
+MODULE=$(grep '^BUILT_MODULE_NAME=' "$DKMS_CONF" | cut -d'"' -f2)
+SENSOR="${MODULE#nv_}"
 DKMS_SRC="/usr/src/${PACKAGE_NAME}-${VERSION}"
+DEPMOD_CONF="/etc/depmod.d/${PACKAGE_NAME}.conf"
 TUNING_DIR="$SCRIPT_DIR/tuning"
 NVCAM_SETTINGS="/var/nvidia/nvcam/settings"
 GLOBAL_ISP="$NVCAM_SETTINGS/camera_overrides.isp"
@@ -85,6 +87,10 @@ cp -r "$SCRIPT_DIR/scripts" "$DKMS_SRC/"
 
 # Fetch NVIDIA device tree headers (requires internet)
 "$DKMS_SRC/scripts/fetch-nvidia-headers.sh" "$DKMS_SRC/include"
+
+# Rank DKMS build above stock module of same name
+print PIN "$MODULE -> updates/dkms"
+echo "override $MODULE * updates/dkms" > "$DEPMOD_CONF"
 
 # DKMS add + build + install
 print DKMS "add ${PACKAGE_NAME}/${VERSION}"
