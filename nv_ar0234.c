@@ -157,7 +157,7 @@ static int ar0234_set_gain(struct tegracam_device *tc_dev, s64 val)
 	struct camera_common_data *s_data = tc_dev->s_data;
 	struct ar0234 *priv = (struct ar0234 *)tc_dev->priv;
 	const struct sensor_mode_properties *mode =
-		&s_data->sensor_props.sensor_modes[s_data->mode];
+		&s_data->sensor_props.sensor_modes[s_data->mode_prop_idx];
 	u32 gain_factor = mode->control_properties.gain_factor;
 	u16 mfr_30ba_val = 0;
 	u8 reg_coarse = ilog2(val / gain_factor);
@@ -215,7 +215,7 @@ static int ar0234_set_exposure(struct tegracam_device *tc_dev, s64 val)
 	struct camera_common_data *s_data = tc_dev->s_data;
 	struct ar0234 *priv = (struct ar0234 *)tc_dev->priv;
 	const struct sensor_mode_properties *mode =
-		&s_data->sensor_props.sensor_modes[s_data->mode];
+		&s_data->sensor_props.sensor_modes[s_data->mode_prop_idx];
 	u16 cit;
 
 	if (mode->control_properties.exposure_factor == 0 ||
