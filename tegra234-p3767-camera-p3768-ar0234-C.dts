@@ -228,12 +228,12 @@
 								default_gain = "169";
 								min_hdr_ratio = "1";
 								max_hdr_ratio = "1";
-								min_framerate = "2000000"; /* 2.0 fps */
-								max_framerate = "60000000"; /* 60.0 fps */
+								min_framerate = "2250000"; /* 2.25 fps */
+								max_framerate = "120000000"; /* 120.0 fps */
 								step_framerate = "1";
 								default_framerate = "30000000"; /* 30.0 fps */
-								min_exp_time = "28"; /* us */
-								max_exp_time = "499909"; /* us */
+								min_exp_time = "14"; /* us */
+								max_exp_time = "444401"; /* us */
 								step_exp_time = "1";
 								default_exp_time = "217"; /* us */
 								embedded_metadata_height = "0";
