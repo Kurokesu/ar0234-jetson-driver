@@ -128,7 +128,7 @@ static struct reg_16 ar0234_mode_common[] = {
 	{ AR0234_TABLE_END, 0x00 },
 };
 
-/* AR0234 1920x1200 2-lane mode */
+/* AR0234 1920x1200 mode */
 static struct reg_16 ar0234_mode_1920x1200[] = {
 	{ AR0234_REG_Y_ADDR_START, 0x0008 },
 	{ AR0234_REG_X_ADDR_START, 0x0008 },
@@ -140,8 +140,21 @@ static struct reg_16 ar0234_mode_1920x1200[] = {
 	{ AR0234_TABLE_END, 0x00 },
 };
 
+/* AR0234 960x600 2x2 binned mode */
+static struct reg_16 ar0234_mode_960x600[] = {
+	{ AR0234_REG_Y_ADDR_START, 0x0008 },
+	{ AR0234_REG_X_ADDR_START, 0x0008 },
+	{ AR0234_REG_Y_ADDR_END, 0x04B7 },
+	{ AR0234_REG_X_ADDR_END, 0x0787 },
+	{ AR0234_REG_X_ODD_INC, 0x0003 },
+	{ AR0234_REG_Y_ODD_INC, 0x0003 },
+	{ AR0234_REG_READ_MODE, 0xF000 },
+	{ AR0234_TABLE_END, 0x00 },
+};
+
 enum {
 	AR0234_MODE_1920X1200,
+	AR0234_MODE_960X600,
 	AR0234_MODE_COMMON,
 	AR0234_PLL_CONFIG_24_450_10BIT,
 	AR0234_PIXCLK_45MHZ_MFR_SETTINGS,
@@ -149,6 +162,7 @@ enum {
 
 static struct reg_16 *mode_table[] = {
 	[AR0234_MODE_1920X1200] = ar0234_mode_1920x1200,
+	[AR0234_MODE_960X600] = ar0234_mode_960x600,
 	[AR0234_MODE_COMMON] = ar0234_mode_common,
 	[AR0234_PLL_CONFIG_24_450_10BIT] = ar0234_pll_config_24_450_10bit,
 	[AR0234_PIXCLK_45MHZ_MFR_SETTINGS] = ar0234_pixclk_45mhz_mfr_settings,
@@ -165,6 +179,7 @@ static const int ar0234_framerates[] = {
  */
 static const struct camera_common_frmfmt ar0234_frmfmt[] = {
 	{ { 1920, 1200 }, ar0234_framerates, 2, 0, AR0234_MODE_1920X1200 },
+	{ { 960, 600 }, ar0234_framerates, 2, 0, AR0234_MODE_960X600 },
 };
 
 #endif /* __AR0234_MODE_TBLS_H__ */

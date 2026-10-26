@@ -615,7 +615,7 @@ static int ar0234_set_mode(struct tegracam_device *tc_dev)
 		priv->mfr_30ba_val = AR0234_MFR_30BA_DEFAULT;
 	}
 
-	err = ar0234_write_table(s_data, mode_table[AR0234_MODE_1920X1200]);
+	err = ar0234_write_table(s_data, mode_table[s_data->mode]);
 
 	if (err)
 		return err;
