@@ -7,9 +7,9 @@
 
 NVIDIA Jetson kernel driver for Onsemi AR0234, a 2.3 MP global shutter 1/2.6" CMOS sensor.
 
-- 2-lane MIPI CSI-2
+- 1920×1200 up to 120 fps
 - 10-bit RAW output
-- 1920×1200 @ 60 fps
+- 2-lane and 4-lane MIPI CSI-2, single or dual camera
 
 ![Kurokesu camera modules connected to a Jetson carrier board over CSI ribbon cables.](./docs/kurokesu-on-jetson.jpg)
 
@@ -87,6 +87,11 @@ tegra-camrtc-capture-vi tegra-capture-vi: subdev ar0234 10-0010 bound
 
 ## Image output
 
+| Resolution | Port | Lanes | Bit depth | V4L2 format | Data rate / lane | Max fps |
+| ---------- | ---- | ----- | --------- | ----------- | ---------------- | ------- |
+| 1920×1200  | cam0 | 2     | 10        | `BA10`      | 900 Mbps         | 60 fps  |
+| 1920×1200  | cam1 | 4     | 10        | `BA10`      | 900 Mbps         | 120 fps |
+
 ### GStreamer
 
 Single:
@@ -137,7 +142,7 @@ v4l2-ctl -d /dev/video0 \
    --stream-to ar0234_1200p.raw --verbose
 ```
 
-*`override_enable=1` applies frame rate, exposure and gain. Set `frame_rate` explicitly. Until it is written once after boot, sensor runs at 2 fps. Frame rate is in fps × 1000000, exposure in µs and gain as multiplier × 100 (169 to 1600).*
+*`override_enable=1` applies frame rate, exposure and gain. Set `frame_rate` explicitly. Until it is written once after boot, sensor runs at minimum frame rate. Frame rate is in fps × 1000000, exposure in µs and gain as multiplier × 100 (169 to 1600).*
 
 *`bypass_mode=0` resets what Argus leaves behind. Without it raw capture after an Argus session gets no frames.*
 
@@ -210,7 +215,7 @@ Flash signal start can be shifted relative to exposure using `flash_delay`:
 - **Negative values** (lead): flash starts *before* exposure, extending total flash time
 - **Positive values** (lag): flash starts *after* exposure begins, shortening total flash time
 
-`flash_delay` accepts values from -127 to 127, where each unit is approximately **6.8 µs** (2-lane).
+`flash_delay` accepts values from -127 to 127, where each unit is approximately **6.8 µs** on 2 lanes and **3.4 µs** on 4 lanes.
 
 ```bash
 # Flash starts ~68 µs before exposure (2-lane)
