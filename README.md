@@ -8,6 +8,7 @@
 NVIDIA Jetson kernel driver for Onsemi AR0234, a 2.3 MP global shutter 1/2.6" CMOS sensor.
 
 - 1920×1200 up to 120 fps
+- 960×600 up to 236 fps (2×2 binning)
 - 10-bit RAW output
 - 2-lane and 4-lane MIPI CSI-2, single or dual camera
 
@@ -87,10 +88,18 @@ tegra-camrtc-capture-vi tegra-capture-vi: subdev ar0234 10-0010 bound
 
 ## Image output
 
-| Resolution | Port | Lanes | Bit depth | V4L2 format | Data rate / lane | Max fps |
-| ---------- | ---- | ----- | --------- | ----------- | ---------------- | ------- |
-| 1920×1200  | cam0 | 2     | 10        | `BA10`      | 900 Mbps         | 60 fps  |
-| 1920×1200  | cam1 | 4     | 10        | `BA10`      | 900 Mbps         | 120 fps |
+Sensor modes, selected with Argus `sensor-mode` or V4L2 `sensor_mode`:
+
+| Mode                            | Port | Data rate / lane | Lanes | Bit depth | Width | Height | Max fps |
+| ------------------------------- | ---- | ---------------- | ----- | --------- | ----- | ------ | ------- |
+| **1920×1200 (full resolution)** |      |                  |       |           |       |        |         |
+| 0                               | cam0 | 900 Mbps         | 2     | 10        | 1920  | 1200   | 60 fps  |
+| 0                               | cam1 | 900 Mbps         | 4     | 10        | 1920  | 1200   | 120 fps |
+| **960×600 (2×2 binned)**        |      |                  |       |           |       |        |         |
+| 1                               | cam0 | 900 Mbps         | 2     | 10        | 960   | 600    | 118 fps |
+| 1                               | cam1 | 900 Mbps         | 4     | 10        | 960   | 600    | 236 fps |
+
+*Without `sensor-mode`, `nvarguscamerasrc` picks mode from requested resolution and frame rate.*
 
 ### GStreamer
 
@@ -135,7 +144,7 @@ Stream raw 10-bit frame to file:
 
 ```bash
 v4l2-ctl -d /dev/video0 \
-   --set-ctrl bypass_mode=0,override_enable=1 \
+   --set-ctrl bypass_mode=0,sensor_mode=0,override_enable=1 \
    --set-ctrl frame_rate=30000000,exposure=10000,gain=200 \
    --set-fmt-video=width=1920,height=1200,pixelformat=BA10 \
    --stream-mmap --stream-skip=10 --stream-count=1 \
@@ -143,6 +152,21 @@ v4l2-ctl -d /dev/video0 \
 ```
 
 *`override_enable=1` applies frame rate, exposure and gain. Set `frame_rate` explicitly. Until it is written once after boot, sensor runs at minimum frame rate. Frame rate is in fps × 1000000, exposure in µs and gain as multiplier × 100 (169 to 1600).*
+
+*`sensor_mode` selects sensor readout and must match format resolution.*
+
+Stream cam1 binned at 236 fps. Frame rate limit follows active mode, so select binned mode first:
+
+```bash
+v4l2-ctl -d /dev/video0 --set-ctrl sensor_mode=1 \
+   --set-fmt-video=width=960,height=600,pixelformat=BA10
+v4l2-ctl -d /dev/video0 \
+   --set-ctrl bypass_mode=0,sensor_mode=1,override_enable=1 \
+   --set-ctrl frame_rate=236000000,exposure=2000,gain=200 \
+   --set-fmt-video=width=960,height=600,pixelformat=BA10 \
+   --stream-mmap --stream-skip=10 --stream-count=1 \
+   --stream-to ar0234_600p_236fps.raw --verbose
+```
 
 *`bypass_mode=0` resets what Argus leaves behind. Without it raw capture after an Argus session gets no frames.*
 
