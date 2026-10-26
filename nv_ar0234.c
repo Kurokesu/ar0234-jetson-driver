@@ -609,6 +609,11 @@ static int ar0234_set_mode(struct tegracam_device *tc_dev)
 	if (err)
 		return err;
 
+	err = ar0234_write_reg_16(s_data, AR0234_REG_FRAME_LENGTH_LINES,
+				  AR0234_FLL_DEFAULT);
+	if (err)
+		return err;
+
 	priv->frame_length_lines = AR0234_FLL_DEFAULT;
 
 	return err;
