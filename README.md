@@ -115,6 +115,32 @@ gst-launch-1.0 -e \
 nvgstcapture-1.0 --sensor-id 0
 ```
 
+### Raw V4L2
+
+Install `v4l-utils`:
+
+```bash
+sudo apt install -y v4l-utils
+```
+
+> [!IMPORTANT]
+> With dual overlay, NVIDIA maps cam1 to `/dev/video0` and cam0 to `/dev/video1`.
+
+Stream raw 10-bit frame to file:
+
+```bash
+v4l2-ctl -d /dev/video0 \
+   --set-ctrl bypass_mode=0,override_enable=1 \
+   --set-ctrl frame_rate=30000000,exposure=10000,gain=200 \
+   --set-fmt-video=width=1920,height=1200,pixelformat=BA10 \
+   --stream-mmap --stream-skip=10 --stream-count=1 \
+   --stream-to ar0234_1200p.raw --verbose
+```
+
+*`override_enable=1` applies frame rate, exposure and gain. Set `frame_rate` explicitly. Until it is written once after boot, sensor runs at 2 fps. Frame rate is in fps × 1000000, exposure in µs and gain as multiplier × 100 (169 to 1600).*
+
+*`bypass_mode=0` resets what Argus leaves behind. Without it raw capture after an Argus session gets no frames.*
+
 ## Trigger modes
 
 AR0234 supports two external trigger modes. Both use `TRIG` pin on camera module as external signal input. `TRIG` is a **1.8 V logic level** input wired directly to sensor. Trigger pulse only initiates capture, exposure time remains controlled by sensor's integration time register.
