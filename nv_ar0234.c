@@ -81,7 +81,6 @@ struct ar0234 {
 	u16 frame_length_lines;
 	u16 mfr_30ba_val;
 	s64 exposure_us;
-	u8 num_lanes;
 };
 
 static const struct regmap_config sensor_regmap_config = {
@@ -178,7 +177,7 @@ static int ar0234_set_gain(struct tegracam_device *tc_dev, s64 val)
 
 	reg_gain = (reg_coarse << 4) | (reg_fine & 0xF);
 
-	if (priv->num_lanes == 4) {
+	if (s_data->numlanes == 4) {
 		if (reg_gain < 0x20)
 			mfr_30ba_val = AR0234_MFR_30BA_GAIN_BITS(2);
 		else if (reg_gain < 0x3A)
@@ -574,28 +573,15 @@ static int ar0234_set_mode(struct tegracam_device *tc_dev)
 {
 	struct camera_common_data *s_data = tc_dev->s_data;
 	struct ar0234 *priv = (struct ar0234 *)tc_dev->priv;
-	struct device_node *mode;
-	const char *config;
-	unsigned int num_lanes;
+	int num_lanes = s_data->numlanes;
 	int err = 0;
 
 	dev_dbg(tc_dev->dev, "%s:\n", __func__);
 
-	mode = of_get_child_by_name(tc_dev->dev->of_node, "mode0");
-	err = of_property_read_string(mode, "num_lanes", &config);
-	if (err)
-		return err;
-
-	err = kstrtouint(config, 10, &num_lanes);
-	if (err)
-		return err;
-
 	if (num_lanes != 2 && num_lanes != 4)
 		return -EINVAL;
 
-	priv->num_lanes = num_lanes;
-
-	dev_dbg(tc_dev->dev, "Lane amount: %u\n", num_lanes);
+	dev_dbg(tc_dev->dev, "Lane amount: %d\n", num_lanes);
 
 	err = ar0234_write_table(s_data,
 				 mode_table[AR0234_PLL_CONFIG_24_450_10BIT]);
