@@ -28,7 +28,7 @@
 
 #define AR0234_CIT_MIN (2)
 #define AR0234_CIT_MARGIN (1)
-#define AR0234_FLL_MIN (1216)
+#define AR0234_VBLANK_MIN (16)
 #define AR0234_FLL_MAX (0xFFFF)
 #define AR0234_FLL_OVERHEAD (5)
 
@@ -250,6 +250,7 @@ static int ar0234_set_frame_rate(struct tegracam_device *tc_dev, s64 val)
 	struct ar0234 *priv = (struct ar0234 *)tc_dev->priv;
 	const struct sensor_mode_properties *mode =
 		&s_data->sensor_props.sensor_modes[s_data->mode_prop_idx];
+	u16 fll_min = mode->image_properties.height + AR0234_VBLANK_MIN;
 	u16 frame_length_lines;
 	int err = 0;
 
@@ -265,8 +266,8 @@ static int ar0234_set_frame_rate(struct tegracam_device *tc_dev, s64 val)
 			      mode->image_properties.line_length / val) -
 			     AR0234_FLL_OVERHEAD;
 
-	if (frame_length_lines < AR0234_FLL_MIN)
-		frame_length_lines = AR0234_FLL_MIN;
+	if (frame_length_lines < fll_min)
+		frame_length_lines = fll_min;
 	else if (frame_length_lines > AR0234_FLL_MAX)
 		frame_length_lines = AR0234_FLL_MAX;
 
