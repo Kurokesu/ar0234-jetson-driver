@@ -80,6 +80,7 @@ struct ar0234 {
 	struct tegracam_device *tc_dev;
 	u16 frame_length_lines;
 	u16 mfr_30ba_val;
+	s64 exposure_us;
 };
 
 static const struct regmap_config sensor_regmap_config = {
@@ -218,6 +219,8 @@ static int ar0234_set_exposure(struct tegracam_device *tc_dev, s64 val)
 		return -EINVAL;
 	}
 
+	priv->exposure_us = val;
+
 	cit = mode->signal_properties.pixel_clock.val * val /
 	      mode->image_properties.line_length /
 	      mode->control_properties.exposure_factor;
@@ -268,6 +271,10 @@ static int ar0234_set_frame_rate(struct tegracam_device *tc_dev, s64 val)
 		return err;
 
 	priv->frame_length_lines = frame_length_lines;
+
+	/* Exposure limit depends on frame length */
+	if (priv->exposure_us)
+		err = ar0234_set_exposure(tc_dev, priv->exposure_us);
 
 	return err;
 }
@@ -615,6 +622,7 @@ static int ar0234_set_mode(struct tegracam_device *tc_dev)
 		return err;
 
 	priv->frame_length_lines = AR0234_FLL_DEFAULT;
+	priv->exposure_us = 0;
 
 	return err;
 }
