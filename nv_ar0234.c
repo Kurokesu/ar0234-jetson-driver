@@ -28,7 +28,6 @@
 
 #define AR0234_CIT_MIN (2)
 #define AR0234_CIT_MARGIN (1)
-#define AR0234_FLL_DEFAULT (2445)
 #define AR0234_FLL_MIN (1216)
 #define AR0234_FLL_MAX (0xFFFF)
 #define AR0234_FLL_OVERHEAD (5)
@@ -573,6 +572,8 @@ static int ar0234_set_mode(struct tegracam_device *tc_dev)
 {
 	struct camera_common_data *s_data = tc_dev->s_data;
 	struct ar0234 *priv = (struct ar0234 *)tc_dev->priv;
+	const struct sensor_mode_properties *mode =
+		&s_data->sensor_props.sensor_modes[s_data->mode_prop_idx];
 	int num_lanes = s_data->numlanes;
 	int err = 0;
 
@@ -618,15 +619,10 @@ static int ar0234_set_mode(struct tegracam_device *tc_dev)
 	if (err)
 		return err;
 
-	err = ar0234_write_reg_16(s_data, AR0234_REG_FRAME_LENGTH_LINES,
-				  AR0234_FLL_DEFAULT);
-	if (err)
-		return err;
-
-	priv->frame_length_lines = AR0234_FLL_DEFAULT;
 	priv->exposure_us = 0;
 
-	return err;
+	return ar0234_set_frame_rate(
+		tc_dev, mode->control_properties.default_framerate);
 }
 
 static int ar0234_start_streaming(struct tegracam_device *tc_dev)
