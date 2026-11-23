@@ -16,7 +16,7 @@ NVIDIA Jetson kernel driver for Onsemi AR0234, a 2.3 MP global shutter 1/2.6" CM
 
 *AR0234 camera modules are available at [kurokesu.com](https://www.kurokesu.com/item/234C-CSI)*
 
-## Setup
+## Install
 
 Install required tools:
 
@@ -32,13 +32,13 @@ git clone https://github.com/Kurokesu/ar0234-jetson-driver.git
 cd ar0234-jetson-driver/
 ```
 
-Run setup script:
+Run install script:
 
 ```bash
-sudo ./setup.sh
+sudo ./install.sh
 ```
 
-Setup script:
+Install script:
 
 - Fetches NVIDIA device tree headers required for build
 - Builds and installs kernel module via [DKMS](https://github.com/dell/dkms)
@@ -282,9 +282,9 @@ echo 0 | sudo tee /sys/module/nv_ar0234/parameters/test_mode
 
 ## ISP tuning
 
-Tuning file carries ISP parameters for this sensor: black level, white balance and color correction. Lens shading is left disabled. Global `camera_overrides.isp` applies to every camera and would shadow it, so setup retires it to `camera_overrides.isp.bak`.
+Tuning file carries ISP parameters for this sensor: black level, white balance and color correction. Lens shading is left disabled. Global `camera_overrides.isp` applies to every camera and would shadow it, so `install.sh` retires it to `camera_overrides.isp.bak`.
 
-Setup installs a file per badge, `kurokesu_front_234CSI.isp` and `kurokesu_rear_234CSI.isp`, so each camera on a dual board resolves its own.
+`install.sh` copies a file per badge, `kurokesu_front_234CSI.isp` and `kurokesu_rear_234CSI.isp`, so each camera on a dual board resolves its own.
 
 To restore default ISP parameters, remove tuning files and restart Argus:
 
@@ -302,11 +302,29 @@ On JetPack 6 camera RTCPU suspends after 5 s idle and redoes NVCSI calibration o
 SCF: Error InvalidState: Timeout!! Skipping requests on sensor GUID 0 ... (FusaCaptureViCsiHw.cpp, function waitCsiFrameStart())
 ```
 
-`setup.sh` installs `udev/99-camera-rtcpu.rules` to keep RTCPU awake, as NVIDIA [suggests](https://forums.developer.nvidia.com/t/issue-about-nvcsi/299349). Manual alternative, lasts until reboot:
+`install.sh` installs `udev/99-camera-rtcpu.rules` to keep RTCPU awake, as NVIDIA [suggests](https://forums.developer.nvidia.com/t/issue-about-nvcsi/299349). Manual alternative, lasts until reboot:
 
 ```bash
 echo on | sudo tee /sys/devices/platform/bc00000.rtcpu/power/control
 ```
+
+## Uninstall
+
+Pick another camera module in Jetson-IO or boot without overlays:
+
+```bash
+sudo sed -i 's/^DEFAULT .*/DEFAULT primary/' /boot/extlinux/extlinux.conf
+```
+
+Run uninstall script, then reboot:
+
+```bash
+cd ~/ar0234-jetson-driver
+git pull
+sudo ./uninstall.sh
+```
+
+*`uninstall.sh` ships with 0.5.0 and later.*
 
 ## Development builds
 
@@ -318,7 +336,7 @@ sudo make install # copy dtbo to /boot, rmmod + insmod
 ```
 
 > [!NOTE]
-> Module is loaded immediately via `insmod` but won't persist across reboots. Use `sudo ./setup.sh` for permanent installation via DKMS.
+> Module is loaded immediately via `insmod` but won't persist across reboots. Use `sudo ./install.sh` for permanent installation via DKMS.
 
 Individual targets:
 
