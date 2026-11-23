@@ -26,8 +26,8 @@ CPP_FLAGS := -nostdinc -undef -D__DTS__ -x assembler-with-cpp \
 L4T_MAJOR := $(shell grep -oP 'R\K[0-9]+' /etc/nv_tegra_release | head -1)
 L4T_MINOR := $(shell grep -oP 'REVISION:\s*\K[0-9]+' /etc/nv_tegra_release | head -1)
 
-# Kernel module
-NV_OOT := /usr/src/nvidia/nvidia-public
+# Kernel module (nvidia-oot up to L4T 36, nvidia-public from L4T 39)
+NV_OOT := $(firstword $(wildcard /usr/src/nvidia/nvidia-oot /usr/src/nvidia/nvidia-public))
 
 # Auto-generated include markers
 DT_HEADER  := $(LOCAL_INCLUDE)/dt-bindings/tegra234-p3767-0000-common.h
