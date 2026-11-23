@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2026, UAB Kurokesu. All rights reserved.
 #
-# Install camera driver (device tree overlay + kernel module via DKMS)
+# Install Kurokesu camera driver (device tree overlay + kernel module via DKMS)
 
 # Exit on errors
 set -e
