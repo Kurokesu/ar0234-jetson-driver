@@ -28,6 +28,7 @@ DEPMOD_CONF="/etc/depmod.d/${PACKAGE_NAME}.conf"
 TUNING_DIR="$SCRIPT_DIR/tuning"
 NVCAM_SETTINGS="/var/nvidia/nvcam/settings"
 GLOBAL_ISP="$NVCAM_SETTINGS/camera_overrides.isp"
+L4T_MAJOR=$(sed -n 's/^# R\([0-9]*\) .*/\1/p' /etc/nv_tegra_release)
 
 # Check required variables
 if [ -z "$VERSION" ] || [ -z "$PACKAGE_NAME" ] || [ -z "$SENSOR" ]; then
@@ -102,8 +103,11 @@ dkms build -m "$PACKAGE_NAME" -v "$VERSION"
 print DKMS "install ${PACKAGE_NAME}/${VERSION}"
 dkms install -m "$PACKAGE_NAME" -v "$VERSION"
 
-# Install ISP tuning
-if [ -d "$TUNING_DIR" ]; then
+# Install ISP tuning, Argus takes NITO only from L4T 39
+if [ "${L4T_MAJOR:-0}" -ge 39 ] && [ -n "$(find "$TUNING_DIR" -name '*.nito' 2>/dev/null)" ]; then
+	print COPY "NITO tuning -> $NVCAM_SETTINGS"
+	cp "$TUNING_DIR"/*.nito "$NVCAM_SETTINGS/"
+elif [ -d "$TUNING_DIR" ]; then
 	print COPY "ISP tuning -> $NVCAM_SETTINGS"
 	for ISP in "$TUNING_DIR"/*.isp; do
 		NAME="${ISP##*/}"
@@ -123,10 +127,6 @@ if [ -d "$TUNING_DIR" ]; then
 		print RETIRE "camera_overrides.isp -> camera_overrides.isp.bak"
 		mv "$GLOBAL_ISP" "$GLOBAL_ISP.bak"
 	fi
-
-	# Argus on JetPack 7 will not stream without a NITO badged for the module
-	print COPY "ISP NITO -> $NVCAM_SETTINGS"
-	cp "$TUNING_DIR"/*.nito "$NVCAM_SETTINGS/"
 fi
 
 # Keep camera RTCPU awake
